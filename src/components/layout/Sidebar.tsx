@@ -1,13 +1,11 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
   Bot,
   Brain,
   BookOpen,
   MessageSquare,
   Users,
-  Plug,
   Settings,
   ChevronLeft,
   Train,
@@ -16,6 +14,7 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const agents = [
   { id: "cso", name: "Michael", role: "CSO", icon: Bot },
@@ -38,9 +37,6 @@ const managementItems = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-
-  const currentAgentId = location.pathname.split("/agents/")[1] || agents[0].id;
 
   return (
     <aside
@@ -50,21 +46,14 @@ export function Sidebar() {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5">
+      <div className={cn("flex items-center gap-3 py-5", collapsed ? "px-3 justify-center" : "px-5")}>
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary flex-shrink-0">
+          <Train className="h-5 w-5 text-primary-foreground" />
+        </div>
         {!collapsed && (
-          <>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Train className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-semibold text-white">
-              RailVision
-            </span>
-          </>
-        )}
-        {collapsed && (
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary mx-auto">
-            <Train className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <span className="text-xl font-semibold text-white">
+            RailVision
+          </span>
         )}
       </div>
 
@@ -84,27 +73,32 @@ export function Sidebar() {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto scrollbar-thin px-4">
+      <nav className={cn("flex-1 overflow-y-auto scrollbar-thin", collapsed ? "px-2" : "px-4")}>
         {/* AGENT Section */}
         <div className="mb-4">
-          <div className="flex items-center gap-2 px-2 py-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              {!collapsed ? "Agent" : ""}
-            </span>
-            {!collapsed && <div className="flex-1 h-px bg-gray-700" />}
-          </div>
+          {!collapsed && (
+            <div className="flex items-center gap-2 px-2 py-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Agent
+              </span>
+              <div className="flex-1 h-px bg-gray-700" />
+            </div>
+          )}
 
           <div className="space-y-1">
             {agents.map((agent) => {
               const isAgentActive = location.pathname === `/agents/${agent.id}`;
               const AgentIcon = agent.icon;
 
-              return (
+              const agentContent = (
                 <NavLink
                   key={agent.id}
                   to={`/agents/${agent.id}`}
                   className={cn(
-                    "flex items-center gap-3 rounded-full px-3 py-2.5 text-sm transition-all duration-200",
+                    "flex items-center gap-3 text-sm transition-all duration-200",
+                    collapsed
+                      ? "justify-center rounded-lg p-2"
+                      : "rounded-full px-3 py-2.5",
                     isAgentActive
                       ? "bg-primary text-white"
                       : "text-gray-300 hover:bg-gray-700/50"
@@ -112,13 +106,14 @@ export function Sidebar() {
                 >
                   {AgentIcon ? (
                     <div className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-full",
+                      "flex items-center justify-center rounded-full flex-shrink-0",
+                      collapsed ? "h-8 w-8" : "h-7 w-7",
                       isAgentActive ? "bg-primary-foreground/20" : "bg-gray-600"
                     )}>
-                      <AgentIcon className="h-4 w-4" />
+                      <AgentIcon className={cn(collapsed ? "h-5 w-5" : "h-4 w-4")} />
                     </div>
                   ) : (
-                    <Avatar className="h-7 w-7">
+                    <Avatar className={cn(collapsed ? "h-8 w-8" : "h-7 w-7")}>
                       <AvatarFallback className={cn(
                         "text-xs font-medium",
                         isAgentActive ? "bg-primary-foreground/20 text-white" : "bg-gray-600 text-gray-300"
@@ -135,86 +130,97 @@ export function Sidebar() {
                   )}
                 </NavLink>
               );
+
+              if (collapsed) {
+                return (
+                  <Tooltip key={agent.id} delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      {agentContent}
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-gray-800 text-white border-gray-700">
+                      {agent.name} ({agent.role})
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return agentContent;
             })}
           </div>
         </div>
 
-        {/* MEMORY Section */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2 px-2 py-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              {!collapsed ? "Memory" : ""}
-            </span>
-            {!collapsed && <div className="flex-1 h-px bg-gray-700" />}
+        {/* MEMORY Section - Only show when expanded */}
+        {!collapsed && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 px-2 py-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Memory
+              </span>
+              <div className="flex-1 h-px bg-gray-700" />
+            </div>
+
+            <div className="space-y-1">
+              {memoryItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                const RightIcon = item.rightIcon;
+
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+                      isActive
+                        ? "bg-gray-700 text-white"
+                        : "text-gray-300 hover:bg-gray-700/50"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className="flex-1 font-medium">{item.label}</span>
+                    <RightIcon className="h-5 w-5 text-gray-500" />
+                  </NavLink>
+                );
+              })}
+            </div>
           </div>
+        )}
 
-          <div className="space-y-1">
-            {memoryItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              const RightIcon = item.rightIcon;
+        {/* MANAGEMENT Section - Only show when expanded */}
+        {!collapsed && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 px-2 py-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Management
+              </span>
+              <div className="flex-1 h-px bg-gray-700" />
+            </div>
 
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
-                    isActive
-                      ? "bg-gray-700 text-white"
-                      : "text-gray-300 hover:bg-gray-700/50"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 font-medium">{item.label}</span>
-                      <RightIcon className="h-5 w-5 text-gray-500" />
-                    </>
-                  )}
-                </NavLink>
-              );
-            })}
+            <div className="space-y-1">
+              {managementItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                const RightIcon = item.rightIcon;
+
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+                      isActive
+                        ? "bg-gray-700 text-white"
+                        : "text-gray-300 hover:bg-gray-700/50"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className="flex-1 font-medium">{item.label}</span>
+                    {RightIcon && <RightIcon className="h-5 w-5 text-gray-500" />}
+                    {item.rightLabel && <span className="text-sm text-gray-500">{item.rightLabel}</span>}
+                  </NavLink>
+                );
+              })}
+            </div>
           </div>
-        </div>
-
-        {/* MANAGEMENT Section */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2 px-2 py-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              {!collapsed ? "Management" : ""}
-            </span>
-            {!collapsed && <div className="flex-1 h-px bg-gray-700" />}
-          </div>
-
-          <div className="space-y-1">
-            {managementItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              const RightIcon = item.rightIcon;
-
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
-                    isActive
-                      ? "bg-gray-700 text-white"
-                      : "text-gray-300 hover:bg-gray-700/50"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 font-medium">{item.label}</span>
-                      {RightIcon && <RightIcon className="h-5 w-5 text-gray-500" />}
-                      {item.rightLabel && <span className="text-sm text-gray-500">{item.rightLabel}</span>}
-                    </>
-                  )}
-                </NavLink>
-              );
-            })}
-          </div>
-        </div>
+        )}
       </nav>
 
       {/* Collapse button */}
@@ -224,8 +230,8 @@ export function Sidebar() {
           size="sm"
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
-            "w-full justify-center text-gray-400 hover:text-white hover:bg-gray-700/50",
-            !collapsed && "justify-start"
+            "w-full text-gray-400 hover:text-white hover:bg-gray-700/50",
+            collapsed ? "justify-center" : "justify-start"
           )}
         >
           <ChevronLeft
