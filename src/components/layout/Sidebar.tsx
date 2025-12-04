@@ -45,8 +45,14 @@ export function Sidebar() {
         collapsed ? "w-16" : "w-64"
       )}
     >
-      {/* Logo */}
-      <div className={cn("flex items-center gap-3 py-5", collapsed ? "px-3 justify-center" : "px-5")}>
+      {/* Logo - Click to collapse/expand */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className={cn(
+          "flex items-center gap-3 py-5 transition-all hover:opacity-80",
+          collapsed ? "px-3 justify-center" : "px-5"
+        )}
+      >
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary flex-shrink-0">
           <Train className="h-5 w-5 text-primary-foreground" />
         </div>
@@ -55,7 +61,7 @@ export function Sidebar() {
             RailVision
           </span>
         )}
-      </div>
+      </button>
 
       {/* Dashboard Link */}
       {!collapsed && (

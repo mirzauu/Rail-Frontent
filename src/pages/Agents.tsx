@@ -174,7 +174,11 @@ export default function Agents() {
                 { title: "Improve prompt architecture", hasMenu: false, isActive: true },
                 { title: "Feature explanation", hasMenu: false, isActive: false },
                 { title: "Improve email clarity", hasMenu: false, isActive: false },
-                { title: "kimberly", hasMenu: false, isActive: false },
+
+                { title: "Gmail and Drive setup", hasMenu: false, isActive: false },
+                { title: "Email reply draft", hasMenu: false, isActive: false },
+                { title: "HTML email format fix", hasMenu: false, isActive: false },
+                { title: "Rework conversation code", hasMenu: false, isActive: false },
                 { title: "Gmail and Drive setup", hasMenu: false, isActive: false },
                 { title: "Email reply draft", hasMenu: false, isActive: false },
                 { title: "HTML email format fix", hasMenu: false, isActive: false },
@@ -304,31 +308,90 @@ export default function Agents() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="max-w-4xl mx-auto relative">
-            <div className="relative flex items-end gap-2 bg-muted/30 border border-border rounded-xl p-2 focus-within:ring-1 focus-within:ring-ring focus-within:border-ring transition-all">
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground flex-shrink-0 mb-0.5">
-                <Paperclip className="h-5 w-5" />
-              </Button>
-              <textarea
-                placeholder="Ask anything..."
-                className="flex-1 bg-transparent border-0 focus:ring-0 resize-none max-h-32 min-h-[2.5rem] py-2.5 text-sm scrollbar-thin outline-none"
-                rows={1}
-                style={{ height: '44px' }}
-              />
-              <div className="flex items-center gap-1 mb-0.5">
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
-                  <Mic className="h-5 w-5" />
-                </Button>
-                <Button size="icon" className="h-9 w-9 rounded-lg">
-                  <Send className="h-4 w-4" />
-                </Button>
+        <div className="p-4 bg-background">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-muted/50 border border-border rounded-xl overflow-hidden">
+              {/* Input Field */}
+              <div className="px-4 pt-3">
+                <input
+                  type="text"
+                  placeholder="Ask a follow-up"
+                  className="w-full bg-transparent text-foreground placeholder-muted-foreground text-sm outline-none"
+                />
               </div>
-            </div>
-            <div className="text-center mt-2">
-              <p className="text-[10px] text-muted-foreground">
-                AI can make mistakes. Check important info.
-              </p>
+
+              {/* Toolbar */}
+              <div className="flex items-center justify-between px-3 py-2">
+                {/* Left side icons */}
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="icon"
+                    className="h-8 w-8 rounded-lg bg-primary hover:bg-primary/90"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </Button>
+                  <div className="w-px h-5 bg-border mx-1" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Right side icons */}
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <Globe className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="3" width="7" height="7" rx="1" />
+                      <rect x="3" y="14" width="7" height="7" rx="1" />
+                      <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    className="h-8 w-8 rounded-lg bg-muted hover:bg-muted/80 text-foreground"
+                  >
+                    <ArrowRight className="h-4 w-4 -rotate-90" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
