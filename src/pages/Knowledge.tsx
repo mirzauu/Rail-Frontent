@@ -41,7 +41,7 @@ const documents = [
 const folders = [
   { name: "All Documents", count: 342, icon: FileText },
   { name: "PDFs", count: 128, icon: File },
-  { name: "Web Pages", count: 89, icon: Globe },
+  // { name: "Web Pages", count: 89, icon: Globe },
   { name: "Notes", count: 125, icon: FileText },
 ];
 
@@ -123,7 +123,7 @@ export default function Knowledge() {
             </div>
 
             {/* Tags */}
-            <div>
+            {/* <div>
               <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Tag className="h-4 w-4" />
                 Tag Groups
@@ -139,7 +139,7 @@ export default function Knowledge() {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
