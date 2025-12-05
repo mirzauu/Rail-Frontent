@@ -1,4 +1,4 @@
-import { Search, Bell, ChevronDown } from "lucide-react";
+import { Search, Bell, ChevronDown, Sun, Moon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,8 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "next-themes";
 
 export function TopBar() {
+  const { theme, setTheme } = useTheme();
+
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
       {/* Left section - Org switcher */}
@@ -77,6 +80,23 @@ export function TopBar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Preferences</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="cursor-pointer"
+            >
+              {theme === "dark" ? (
+                <>
+                  <Sun className="h-4 w-4 mr-2" />
+                  Light Mode
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4 mr-2" />
+                  Dark Mode
+                </>
+              )}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">
               Sign out

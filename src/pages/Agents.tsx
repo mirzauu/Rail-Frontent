@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   Search,
   Globe,
@@ -24,7 +25,11 @@ import {
   Users,
   TrendingUp,
   Code,
-  Plus
+  Plus,
+  Check,
+  Zap,
+  Bot,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,9 +37,22 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Define AI agents with their details
-const aiAgents = {
+const aiAgents: Record<string, { name: string; role: string; icon: any; color: string; textColor: string }> = {
+  cso: {
+    name: "Michael Chen",
+    role: "CSO",
+    icon: Shield,
+    color: "bg-red-500",
+    textColor: "text-red-500"
+  },
   cfo: {
     name: "Elena Rodriguez",
     role: "CFO",
@@ -72,53 +90,122 @@ const aiAgents = {
   }
 };
 
-// Sample conversation with multiple agents
-const conversation = [
-  {
-    id: 1,
-    type: "user",
-    content: "Can you provide a budget breakdown for these initiatives?",
-    time: "10:07"
-  },
-  {
-    id: 2,
-    type: "agent",
-    agent: "cfo",
-    content: "I've prepared a comprehensive financial model. The total investment required is $2.4M spread across Q1-Q2. Expected ROI is 180% within 18 months. Here's the breakdown: Digital transformation ($950K), Customer experience ($800K), Strategic partnerships ($650K). We have adequate runway and can finance this through existing reserves.",
-    time: "10:15"
-  },
-  {
-    id: 3,
-    type: "agent",
-    agent: "coo",
-    content: "From an operational standpoint, we can execute this plan with our current infrastructure. However, I recommend establishing a dedicated project management office to ensure seamless coordination across departments. Timeline: 6-8 weeks for setup, full deployment by March.",
-    time: "10:17"
-  },
-  {
-    id: 4,
-    type: "user",
-    content: "What about talent requirements?",
-    time: "10:19"
-  },
-  {
-    id: 5,
-    type: "agent",
-    agent: "chro",
-    content: "Excellent question. We'll need to hire 12 specialists across AI/ML, customer success, and partnership development. I've already identified top candidates through our talent network. Additionally, we should upskill 25 existing employees through targeted training programs. Estimated timeline: 8 weeks for hiring, 4 weeks for onboarding.",
-    time: "10:21"
-  }
+// Agent-specific conversations
+const agentConversations: Record<string, { id: number; type: string; agent?: string; content: string; time: string }[]> = {
+  cso: [
+    { id: 1, type: "user", content: "What are the key security risks we should address this quarter?", time: "09:30" },
+    { id: 2, type: "agent", agent: "cso", content: "Based on my analysis, we have three critical areas to address: 1) Cloud infrastructure security gaps that need immediate patching, 2) Employee security awareness training is overdue for 40% of staff, and 3) Third-party vendor access controls need strengthening. I recommend prioritizing the cloud security patches this week.", time: "09:35" },
+    { id: 3, type: "user", content: "What's the estimated budget for these security improvements?", time: "09:40" },
+    { id: 4, type: "agent", agent: "cso", content: "For comprehensive coverage: Cloud security upgrades ($180K), Security awareness program ($45K), Vendor management platform ($75K). Total investment: $300K. This will reduce our risk exposure by approximately 60% and bring us into full compliance with SOC 2 requirements.", time: "09:45" },
+  ],
+  cfo: [
+    { id: 1, type: "user", content: "Can you provide a budget breakdown for these initiatives?", time: "10:07" },
+    { id: 2, type: "agent", agent: "cfo", content: "I've prepared a comprehensive financial model. The total investment required is $2.4M spread across Q1-Q2. Expected ROI is 180% within 18 months. Here's the breakdown: Digital transformation ($950K), Customer experience ($800K), Strategic partnerships ($650K). We have adequate runway and can finance this through existing reserves.", time: "10:15" },
+    { id: 3, type: "user", content: "What's our current cash position?", time: "10:20" },
+    { id: 4, type: "agent", agent: "cfo", content: "Our current cash reserves stand at $8.2M with a monthly burn rate of $420K. We have 19 months of runway. The proposed $2.4M investment would reduce this to 14 months, which is still within our comfortable threshold. Revenue projections show break-even on these initiatives by month 8.", time: "10:25" },
+  ],
+  coo: [
+    { id: 1, type: "user", content: "How can we improve our operational efficiency?", time: "11:00" },
+    { id: 2, type: "agent", agent: "coo", content: "From an operational standpoint, I've identified three key opportunities: 1) Automating our order processing could reduce fulfillment time by 35%, 2) Consolidating our warehouse locations would save $200K annually, 3) Implementing predictive maintenance would reduce equipment downtime by 50%. I recommend starting with order automation.", time: "11:08" },
+    { id: 3, type: "user", content: "What's the timeline for the automation project?", time: "11:15" },
+    { id: 4, type: "agent", agent: "coo", content: "The automation project would take 12 weeks: Phase 1 (weeks 1-4) - System integration and testing, Phase 2 (weeks 5-8) - Pilot with 20% of orders, Phase 3 (weeks 9-12) - Full rollout and optimization. We can run this parallel to current operations with minimal disruption.", time: "11:20" },
+  ],
+  cmo: [
+    { id: 1, type: "user", content: "What marketing strategies should we focus on for Q2?", time: "14:00" },
+    { id: 2, type: "agent", agent: "cmo", content: "Based on our Q1 performance data, I recommend three priority strategies: 1) Double down on LinkedIn content - it's driving 45% of our qualified leads, 2) Launch a customer referral program - our NPS of 72 indicates strong advocacy potential, 3) Invest in video marketing - video content has 3x engagement vs. static posts. Budget allocation: Content (40%), Referral program (30%), Video production (30%).", time: "14:10" },
+    { id: 3, type: "user", content: "How do we measure success for these campaigns?", time: "14:18" },
+    { id: 4, type: "agent", agent: "cmo", content: "Key metrics by initiative: LinkedIn - target 500 MQLs/month (currently 320), Referral program - aim for 15% of new customers from referrals, Video content - 10K views per video average with 8% CTR. I'll set up a weekly dashboard tracking pipeline impact, cost per lead, and conversion rates at each funnel stage.", time: "14:25" },
+  ],
+  cto: [
+    { id: 1, type: "user", content: "What's the status of our cloud migration project?", time: "15:30" },
+    { id: 2, type: "agent", agent: "cto", content: "We're 65% complete on the migration to AWS. Core services are live in production. Remaining work: Database migration (2 weeks), Legacy API modernization (3 weeks), and final security hardening (1 week). We've already seen 40% improvement in API response times and 25% reduction in infrastructure costs.", time: "15:38" },
+    { id: 3, type: "user", content: "Any technical debt we should address?", time: "15:45" },
+    { id: 4, type: "agent", agent: "cto", content: "Critical technical debt items: 1) Monolithic auth service needs to be split into microservices - blocking scalability, 2) Test coverage is at 45%, should be 80%+, 3) CI/CD pipeline needs optimization - builds taking 25 mins, target is 8 mins. I propose dedicating 20% of sprint capacity to debt reduction over the next 3 sprints.", time: "15:52" },
+  ],
+};
+
+// AI Models
+const aiModels = [
+  { id: "auto", name: "Auto", description: "Automatically select the best model", icon: Zap },
+  { id: "claude", name: "Claude", description: "Anthropic Claude 3.5 Sonnet", icon: Bot },
+  { id: "gpt", name: "GPT", description: "OpenAI GPT-4o", icon: Bot },
+  { id: "perplexity", name: "Perplexity", description: "Perplexity Sonar", icon: Globe },
 ];
 
+// Chat history for each agent
+const agentChatHistory: Record<string, { title: string; hasMenu: boolean; isActive: boolean }[]> = {
+  cso: [
+    { title: "Q1 Security audit review", hasMenu: true, isActive: false },
+    { title: "Risk assessment framework", hasMenu: false, isActive: true },
+    { title: "Compliance policy update", hasMenu: false, isActive: false },
+    { title: "Strategic roadmap 2025", hasMenu: false, isActive: false },
+    { title: "Cybersecurity budget", hasMenu: false, isActive: false },
+    { title: "Vendor risk analysis", hasMenu: false, isActive: false },
+    { title: "Data protection strategy", hasMenu: false, isActive: false },
+    { title: "Incident response plan", hasMenu: false, isActive: false },
+  ],
+  cfo: [
+    { title: "Q4 Financial report", hasMenu: true, isActive: false },
+    { title: "Budget allocation 2025", hasMenu: false, isActive: true },
+    { title: "Revenue forecast analysis", hasMenu: false, isActive: false },
+    { title: "Cost optimization plan", hasMenu: false, isActive: false },
+    { title: "Investment portfolio review", hasMenu: false, isActive: false },
+    { title: "Cash flow projections", hasMenu: false, isActive: false },
+    { title: "Tax strategy planning", hasMenu: false, isActive: false },
+    { title: "Quarterly earnings call", hasMenu: false, isActive: false },
+  ],
+  coo: [
+    { title: "Operations efficiency review", hasMenu: true, isActive: false },
+    { title: "Supply chain optimization", hasMenu: false, isActive: true },
+    { title: "Process automation plan", hasMenu: false, isActive: false },
+    { title: "Facility expansion", hasMenu: false, isActive: false },
+    { title: "Vendor management", hasMenu: false, isActive: false },
+    { title: "Quality assurance metrics", hasMenu: false, isActive: false },
+    { title: "Logistics improvement", hasMenu: false, isActive: false },
+    { title: "Operational KPIs dashboard", hasMenu: false, isActive: false },
+  ],
+  cmo: [
+    { title: "Brand strategy 2025", hasMenu: true, isActive: false },
+    { title: "Marketing campaign ROI", hasMenu: false, isActive: true },
+    { title: "Social media analytics", hasMenu: false, isActive: false },
+    { title: "Customer acquisition plan", hasMenu: false, isActive: false },
+    { title: "Content marketing strategy", hasMenu: false, isActive: false },
+    { title: "Product launch timeline", hasMenu: false, isActive: false },
+    { title: "Competitor analysis", hasMenu: false, isActive: false },
+    { title: "Customer feedback review", hasMenu: false, isActive: false },
+  ],
+  cto: [
+    { title: "Tech stack modernization", hasMenu: true, isActive: false },
+    { title: "Cloud migration strategy", hasMenu: false, isActive: true },
+    { title: "API architecture review", hasMenu: false, isActive: false },
+    { title: "DevOps pipeline setup", hasMenu: false, isActive: false },
+    { title: "Security infrastructure", hasMenu: false, isActive: false },
+    { title: "AI/ML implementation", hasMenu: false, isActive: false },
+    { title: "Technical debt reduction", hasMenu: false, isActive: false },
+    { title: "Engineering team scaling", hasMenu: false, isActive: false },
+  ],
+};
+
 export default function Agents() {
-  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
+  const { agentId } = useParams<{ agentId: string }>();
+  
+  // Check if mobile on initial render
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(!isMobile);
+  const [selectedModel, setSelectedModel] = useState("auto");
+
+  // Get chat history and conversation based on current agent
+  const currentChatHistory = agentChatHistory[agentId || "cso"] || agentChatHistory.cso;
+  const currentConversation = agentConversations[agentId || "cso"] || agentConversations.cso;
 
   return (
     <div className="flex h-full w-full bg-background overflow-hidden border-t border-border">
       {/* Left Sidebar - Chat History */}
       <div
         className={cn(
-          "flex flex-col border-border bg-card/30 transition-all duration-300 ease-in-out",
+          "flex flex-col border-border bg-[#f8fafc] dark:bg-card/30 transition-all duration-300 ease-in-out",
           isLeftSidebarOpen
             ? "w-[280px] lg:w-[320px] flex-shrink-0 border-r"
             : "w-0 overflow-hidden opacity-0"
@@ -169,23 +256,7 @@ export default function Agents() {
 
             {/* Chat list */}
             <div className="space-y-0.5">
-              {[
-                { title: "Client calendar issues", hasMenu: true, isActive: false },
-                { title: "Improve prompt architecture", hasMenu: false, isActive: true },
-                { title: "Feature explanation", hasMenu: false, isActive: false },
-                { title: "Improve email clarity", hasMenu: false, isActive: false },
-
-                { title: "Gmail and Drive setup", hasMenu: false, isActive: false },
-                { title: "Email reply draft", hasMenu: false, isActive: false },
-                { title: "HTML email format fix", hasMenu: false, isActive: false },
-                { title: "Rework conversation code", hasMenu: false, isActive: false },
-                { title: "Gmail and Drive setup", hasMenu: false, isActive: false },
-                { title: "Email reply draft", hasMenu: false, isActive: false },
-                { title: "HTML email format fix", hasMenu: false, isActive: false },
-                { title: "Rework conversation code", hasMenu: false, isActive: false },
-                { title: "Image quality improvement", hasMenu: false, isActive: false },
-                { title: "Image editing request", hasMenu: false, isActive: false }
-              ].map((chat, i) => (
+              {currentChatHistory.map((chat, i) => (
                 <div
                   key={i}
                   className={cn(
@@ -221,7 +292,7 @@ export default function Agents() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-background relative transition-all duration-300">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#fefcf8] dark:bg-background relative transition-all duration-300">
         {/* Chat Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/50 h-[60px]">
           <div className="flex items-center gap-2">
@@ -229,10 +300,10 @@ export default function Agents() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground mr-2"
+                className="h-8 w-8 bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground mr-2"
                 onClick={() => setIsLeftSidebarOpen(true)}
               >
-                <PanelLeft className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
               </Button>
             )}
             <h2 className="font-semibold text-lg">Chat</h2>
@@ -262,7 +333,7 @@ export default function Agents() {
         <ScrollArea className="flex-1 p-6">
           <div className="max-w-4xl mx-auto space-y-6 pb-4">
             {/* Conversation Messages */}
-            {conversation.map((message) => {
+            {currentConversation.map((message) => {
               if (message.type === "user") {
                 return (
                   <div key={message.id} className="flex justify-end items-start gap-3">
@@ -281,13 +352,12 @@ export default function Agents() {
                 );
               } else {
                 const agent = aiAgents[message.agent as keyof typeof aiAgents];
-                const AgentIcon = agent.icon;
 
                 return (
                   <div key={message.id} className="flex items-start gap-3">
                     <Avatar className={cn("h-8 w-8 flex-shrink-0", agent.color)}>
                       <AvatarFallback className={cn(agent.color, "text-white")}>
-                        <AgentIcon className="h-4 w-4" />
+                        <Bot className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col flex-1 max-w-[85%]">
@@ -308,9 +378,9 @@ export default function Agents() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="p-4 bg-background">
+        <div className="p-4 bg-[#fefcf8] dark:bg-background">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-muted/50 border border-border rounded-xl overflow-hidden">
+            <div className="bg-[#f8fafc] dark:bg-muted/50 border border-border rounded-xl overflow-hidden">
               {/* Input Field */}
               <div className="px-4 pt-3">
                 <input
@@ -324,7 +394,7 @@ export default function Agents() {
               <div className="flex items-center justify-between px-3 py-2">
                 {/* Left side icons */}
                 <div className="flex items-center gap-1">
-                  <Button
+                  {/* <Button
                     size="icon"
                     className="h-8 w-8 rounded-lg bg-primary hover:bg-primary/90"
                   >
@@ -346,30 +416,51 @@ export default function Agents() {
                     className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                   >
                     <Sparkles className="h-4 w-4" />
-                  </Button>
+                  </Button> */}
                 </div>
 
                 {/* Right side icons */}
                 <div className="flex items-center gap-1">
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                   >
                     <Globe className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="3" width="7" height="7" rx="1" />
-                      <rect x="14" y="3" width="7" height="7" rx="1" />
-                      <rect x="3" y="14" width="7" height="7" rx="1" />
-                      <rect x="14" y="14" width="7" height="7" rx="1" />
-                    </svg>
-                  </Button>
+                  </Button> */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="7" height="7" rx="1" />
+                          <rect x="14" y="3" width="7" height="7" rx="1" />
+                          <rect x="3" y="14" width="7" height="7" rx="1" />
+                          <rect x="14" y="14" width="7" height="7" rx="1" />
+                        </svg>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-52">
+                      {aiModels.map((model) => (
+                        <DropdownMenuItem
+                          key={model.id}
+                          onClick={() => setSelectedModel(model.id)}
+                          className="flex items-center gap-2 py-2 cursor-pointer"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{model.name}</div>
+                            <div className="text-xs text-muted-foreground">{model.description}</div>
+                          </div>
+                          {selectedModel === model.id && (
+                            <Check className="h-4 w-4 text-primary" />
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -400,7 +491,7 @@ export default function Agents() {
       {/* Right Sidebar - Context */}
       <div
         className={cn(
-          "flex flex-col border-border bg-card/30 transition-all duration-300 ease-in-out",
+          "flex flex-col border-border bg-[#f8fafc] dark:bg-card/30 transition-all duration-300 ease-in-out",
           isRightSidebarOpen
             ? "w-[300px] lg:w-[350px] flex-shrink-0 border-l"
             : "w-0 overflow-hidden opacity-0"

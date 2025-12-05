@@ -35,13 +35,16 @@ const managementItems = [
 ];
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  // Check if mobile on initial render
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  const [collapsed, setCollapsed] = useState(isMobile);
   const location = useLocation();
 
   return (
     <aside
       className={cn(
-        "flex h-full flex-col bg-[#1e2023] transition-all duration-300",
+        "flex h-full flex-col bg-[#eef1f5] dark:bg-[#1e2023] border-r border-gray-200 dark:border-gray-700 transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
     >
@@ -57,7 +60,7 @@ export function Sidebar() {
           <Train className="h-5 w-5 text-primary-foreground" />
         </div>
         {!collapsed && (
-          <span className="text-xl font-semibold text-white">
+          <span className="text-xl font-semibold text-gray-800 dark:text-white">
             RailVision
           </span>
         )}
@@ -70,7 +73,7 @@ export function Sidebar() {
             to="/"
             className={cn(
               "flex items-center justify-center py-2 text-lg font-semibold transition-colors",
-              location.pathname === "/" ? "text-white" : "text-gray-400 hover:text-white"
+              location.pathname === "/" ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             )}
           >
             Dashboard
@@ -84,10 +87,10 @@ export function Sidebar() {
         <div className="mb-4">
           {!collapsed && (
             <div className="flex items-center gap-2 px-2 py-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Agent
               </span>
-              <div className="flex-1 h-px bg-gray-700" />
+              <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
             </div>
           )}
 
@@ -107,14 +110,14 @@ export function Sidebar() {
                       : "rounded-full px-3 py-2.5",
                     isAgentActive
                       ? "bg-primary text-white"
-                      : "text-gray-300 hover:bg-gray-700/50"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50"
                   )}
                 >
                   {AgentIcon ? (
                     <div className={cn(
                       "flex items-center justify-center rounded-full flex-shrink-0",
                       collapsed ? "h-8 w-8" : "h-7 w-7",
-                      isAgentActive ? "bg-primary-foreground/20" : "bg-gray-600"
+                      isAgentActive ? "bg-primary-foreground/20" : "bg-gray-300 dark:bg-gray-600"
                     )}>
                       <AgentIcon className={cn(collapsed ? "h-5 w-5" : "h-4 w-4")} />
                     </div>
@@ -122,7 +125,7 @@ export function Sidebar() {
                     <Avatar className={cn(collapsed ? "h-8 w-8" : "h-7 w-7")}>
                       <AvatarFallback className={cn(
                         "text-xs font-medium",
-                        isAgentActive ? "bg-primary-foreground/20 text-white" : "bg-gray-600 text-gray-300"
+                        isAgentActive ? "bg-primary-foreground/20 text-white" : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
                       )}>
                         {agent.letter}
                       </AvatarFallback>
@@ -143,7 +146,7 @@ export function Sidebar() {
                     <TooltipTrigger asChild>
                       {agentContent}
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="bg-gray-800 text-white border-gray-700">
+                    <TooltipContent side="right" className="bg-gray-700 text-white border-gray-600">
                       {agent.name} ({agent.role})
                     </TooltipContent>
                   </Tooltip>
@@ -159,10 +162,10 @@ export function Sidebar() {
         {!collapsed && (
           <div className="mb-4">
             <div className="flex items-center gap-2 px-2 py-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Memory
               </span>
-              <div className="flex-1 h-px bg-gray-700" />
+              <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
             </div>
 
             <div className="space-y-1">
@@ -177,13 +180,13 @@ export function Sidebar() {
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
                       isActive
-                        ? "bg-gray-700 text-white"
-                        : "text-gray-300 hover:bg-gray-700/50"
+                        ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50"
                     )}
                   >
                     <item.icon className="h-5 w-5" />
                     <span className="flex-1 font-medium">{item.label}</span>
-                    <RightIcon className="h-5 w-5 text-gray-500" />
+                    <RightIcon className="h-5 w-5 text-gray-400" />
                   </NavLink>
                 );
               })}
@@ -195,10 +198,10 @@ export function Sidebar() {
         {!collapsed && (
           <div className="mb-4">
             <div className="flex items-center gap-2 px-2 py-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Management
               </span>
-              <div className="flex-1 h-px bg-gray-700" />
+              <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
             </div>
 
             <div className="space-y-1">
@@ -213,14 +216,14 @@ export function Sidebar() {
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
                       isActive
-                        ? "bg-gray-700 text-white"
-                        : "text-gray-300 hover:bg-gray-700/50"
+                        ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50"
                     )}
                   >
                     <item.icon className="h-5 w-5" />
                     <span className="flex-1 font-medium">{item.label}</span>
                     {RightIcon && <RightIcon className="h-5 w-5 text-gray-500" />}
-                    {item.rightLabel && <span className="text-sm text-gray-500">{item.rightLabel}</span>}
+                    {item.rightLabel && <span className="text-sm text-gray-400">{item.rightLabel}</span>}
                   </NavLink>
                 );
               })}
@@ -230,13 +233,13 @@ export function Sidebar() {
       </nav>
 
       {/* Collapse button */}
-      <div className="border-t border-gray-700 p-4">
+      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
-            "w-full text-gray-400 hover:text-white hover:bg-gray-700/50",
+            "w-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-gray-700/50",
             collapsed ? "justify-center" : "justify-start"
           )}
         >
