@@ -833,7 +833,7 @@ export default function Agents() {
                     className={cn(
                       "h-8 w-8 rounded-lg transition-all duration-200",
                       inputMessage.trim()
-                        ? "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
+                        ? "bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                         : "bg-muted hover:bg-muted/80 text-muted-foreground cursor-not-allowed"
                     )}
                     onClick={handleSendMessage}
@@ -871,14 +871,35 @@ export default function Agents() {
 
         <ScrollArea className="flex-1 p-4 min-w-[300px]">
           <div className="space-y-6">
-            {/* Thread Summary */}
+            {/* Context Note */}
+            <div className="bg-secondary/30 rounded-lg p-3 text-sm text-foreground/80 leading-relaxed">
+              Discussion focusing on budget breakdown and resource allocation for Q1-Q2 initiatives across digital transformation, customer experience, and strategic partnerships.
+            </div>
+
+            {/* Docs Section */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="font-semibold text-sm">Thread Summary</span>
+                <span className="font-semibold text-sm">Docs</span>
               </div>
-              {/* Context Note */}
-              <div className="bg-secondary/30 rounded-lg p-3 text-sm text-foreground/80 leading-relaxed">
-                Discussion focusing on budget breakdown and resource allocation for Q1-Q2 initiatives across digital transformation, customer experience, and strategic partnerships.
+
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 py-1 text-muted-foreground hover:text-foreground cursor-pointer">
+                  <ChevronDown className="h-4 w-4" />
+                  <span className="text-sm font-medium">Thread Summary</span>
+                </div>
+
+                <div className="pl-2 space-y-2 mt-2">
+                  {[
+                    { name: "Q1-Q2 Financial Model.xlsx", type: "spreadsheet" },
+                    { name: "Talent Acquisition Strategy.pdf", type: "pdf" },
+                    { name: "Project Timeline.doc", type: "doc" }
+                  ].map((doc, i) => (
+                    <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                      <FileText className="h-4 w-4 text-primary" />
+                      <span className="text-sm text-foreground/80 truncate">{doc.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
