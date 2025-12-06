@@ -16,6 +16,8 @@ import {
   Sparkles,
   ArrowRight,
   ChevronDown,
+  ChevronUp,
+  Loader2,
   CheckSquare,
   Send,
   Paperclip,
@@ -29,7 +31,8 @@ import {
   Check,
   Zap,
   Bot,
-  Shield
+  Shield,
+  Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,37 +93,156 @@ const aiAgents: Record<string, { name: string; role: string; icon: any; color: s
   }
 };
 
-// Agent-specific conversations
-const agentConversations: Record<string, { id: number; type: string; agent?: string; content: string; time: string }[]> = {
+// Reasoning step type
+interface ReasoningStep {
+  id: number;
+  title: string;
+  status: 'completed' | 'loading' | 'pending';
+  details?: string[];
+  isExpanded?: boolean;
+}
+
+// Message type with reasoning
+interface Message {
+  id: number;
+  type: string;
+  agent?: string;
+  content: string;
+  time: string;
+  reasoning?: ReasoningStep[];
+}
+
+// Agent-specific conversations with reasoning
+const agentConversations: Record<string, Message[]> = {
   cso: [
     { id: 1, type: "user", content: "What are the key security risks we should address this quarter?", time: "09:30" },
-    { id: 2, type: "agent", agent: "cso", content: "Based on my analysis, we have three critical areas to address: 1) Cloud infrastructure security gaps that need immediate patching, 2) Employee security awareness training is overdue for 40% of staff, and 3) Third-party vendor access controls need strengthening. I recommend prioritizing the cloud security patches this week.", time: "09:35" },
+    {
+      id: 2,
+      type: "agent",
+      agent: "cso",
+      content: "Based on my analysis, we have three critical areas to address: 1) Cloud infrastructure security gaps that need immediate patching, 2) Employee security awareness training is overdue for 40% of staff, and 3) Third-party vendor access controls need strengthening. I recommend prioritizing the cloud security patches this week.",
+      time: "09:35",
+      reasoning: [
+        { id: 1, title: "Security scan analyzed successfully", status: "completed", details: ["Analyzing file - security/vulnerability_report.json", "[ 'critical: 3 ', ' high: 12 ', ' medium: 24 ', ' low: 45 ']"] },
+        { id: 2, title: "Fetching compliance data", status: "completed", details: ["fetching contents for file security/compliance_status.json"] },
+      ]
+    },
     { id: 3, type: "user", content: "What's the estimated budget for these security improvements?", time: "09:40" },
-    { id: 4, type: "agent", agent: "cso", content: "For comprehensive coverage: Cloud security upgrades ($180K), Security awareness program ($45K), Vendor management platform ($75K). Total investment: $300K. This will reduce our risk exposure by approximately 60% and bring us into full compliance with SOC 2 requirements.", time: "09:45" },
+    {
+      id: 4,
+      type: "agent",
+      agent: "cso",
+      content: "For comprehensive coverage: Cloud security upgrades ($180K), Security awareness program ($45K), Vendor management platform ($75K). Total investment: $300K. This will reduce our risk exposure by approximately 60% and bring us into full compliance with SOC 2 requirements.",
+      time: "09:45",
+      reasoning: [
+        { id: 1, title: "Budget analysis completed", status: "completed", details: ["Analyzing file - finance/security_budget_2025.xlsx", "[ 'category: infrastructure ', ' amount: $180K ']"] },
+        { id: 2, title: "ROI calculation completed", status: "completed", details: ["calculating risk reduction metrics"] },
+      ]
+    },
   ],
   cfo: [
     { id: 1, type: "user", content: "Can you provide a budget breakdown for these initiatives?", time: "10:07" },
-    { id: 2, type: "agent", agent: "cfo", content: "I've prepared a comprehensive financial model. The total investment required is $2.4M spread across Q1-Q2. Expected ROI is 180% within 18 months. Here's the breakdown: Digital transformation ($950K), Customer experience ($800K), Strategic partnerships ($650K). We have adequate runway and can finance this through existing reserves.", time: "10:15" },
+    {
+      id: 2,
+      type: "agent",
+      agent: "cfo",
+      content: "I've prepared a comprehensive financial model. The total investment required is $2.4M spread across Q1-Q2. Expected ROI is 180% within 18 months. Here's the breakdown: Digital transformation ($950K), Customer experience ($800K), Strategic partnerships ($650K). We have adequate runway and can finance this through existing reserves.",
+      time: "10:15",
+      reasoning: [
+        { id: 1, title: "Financial model analyzed successfully", status: "completed", details: ["Analyzing file - finance/budget_model_q1q2.xlsx", "[ 'total: $2.4M ', ' roi: 180% ', ' timeline: 18 months ']"] },
+        { id: 2, title: "Fetching runway data", status: "completed", details: ["fetching contents for file finance/cash_reserves.json"] },
+      ]
+    },
     { id: 3, type: "user", content: "What's our current cash position?", time: "10:20" },
-    { id: 4, type: "agent", agent: "cfo", content: "Our current cash reserves stand at $8.2M with a monthly burn rate of $420K. We have 19 months of runway. The proposed $2.4M investment would reduce this to 14 months, which is still within our comfortable threshold. Revenue projections show break-even on these initiatives by month 8.", time: "10:25" },
+    {
+      id: 4,
+      type: "agent",
+      agent: "cfo",
+      content: "Our current cash reserves stand at $8.2M with a monthly burn rate of $420K. We have 19 months of runway. The proposed $2.4M investment would reduce this to 14 months, which is still within our comfortable threshold. Revenue projections show break-even on these initiatives by month 8.",
+      time: "10:25",
+      reasoning: [
+        { id: 1, title: "Cash flow analyzed successfully", status: "completed", details: ["Analyzing file - finance/cash_flow_statement.xlsx", "[ 'reserves: $8.2M ', ' burn_rate: $420K/mo ', ' runway: 19 months ']"] },
+        { id: 2, title: "Revenue projection fetched", status: "completed", details: ["fetching contents for file finance/revenue_projections.json"] },
+      ]
+    },
   ],
   coo: [
     { id: 1, type: "user", content: "How can we improve our operational efficiency?", time: "11:00" },
-    { id: 2, type: "agent", agent: "coo", content: "From an operational standpoint, I've identified three key opportunities: 1) Automating our order processing could reduce fulfillment time by 35%, 2) Consolidating our warehouse locations would save $200K annually, 3) Implementing predictive maintenance would reduce equipment downtime by 50%. I recommend starting with order automation.", time: "11:08" },
+    {
+      id: 2,
+      type: "agent",
+      agent: "coo",
+      content: "From an operational standpoint, I've identified three key opportunities: 1) Automating our order processing could reduce fulfillment time by 35%, 2) Consolidating our warehouse locations would save $200K annually, 3) Implementing predictive maintenance would reduce equipment downtime by 50%. I recommend starting with order automation.",
+      time: "11:08",
+      reasoning: [
+        { id: 1, title: "Operations data analyzed successfully", status: "completed", details: ["Analyzing file - operations/efficiency_metrics.json", "[ 'fulfillment_time: 48hrs ', ' warehouse_cost: $800K ', ' downtime: 12% ']"] },
+        { id: 2, title: "Fetching automation benchmarks", status: "completed", details: ["fetching contents for file operations/automation_roi.json"] },
+      ]
+    },
     { id: 3, type: "user", content: "What's the timeline for the automation project?", time: "11:15" },
-    { id: 4, type: "agent", agent: "coo", content: "The automation project would take 12 weeks: Phase 1 (weeks 1-4) - System integration and testing, Phase 2 (weeks 5-8) - Pilot with 20% of orders, Phase 3 (weeks 9-12) - Full rollout and optimization. We can run this parallel to current operations with minimal disruption.", time: "11:20" },
+    {
+      id: 4,
+      type: "agent",
+      agent: "coo",
+      content: "The automation project would take 12 weeks: Phase 1 (weeks 1-4) - System integration and testing, Phase 2 (weeks 5-8) - Pilot with 20% of orders, Phase 3 (weeks 9-12) - Full rollout and optimization. We can run this parallel to current operations with minimal disruption.",
+      time: "11:20",
+      reasoning: [
+        { id: 1, title: "Project timeline generated", status: "completed", details: ["Analyzing file - operations/project_templates.json", "[ 'phase1: 4 weeks ', ' phase2: 4 weeks ', ' phase3: 4 weeks ']"] },
+        { id: 2, title: "Resource allocation checked", status: "completed", details: ["fetching contents for file hr/team_availability.json"] },
+      ]
+    },
   ],
   cmo: [
     { id: 1, type: "user", content: "What marketing strategies should we focus on for Q2?", time: "14:00" },
-    { id: 2, type: "agent", agent: "cmo", content: "Based on our Q1 performance data, I recommend three priority strategies: 1) Double down on LinkedIn content - it's driving 45% of our qualified leads, 2) Launch a customer referral program - our NPS of 72 indicates strong advocacy potential, 3) Invest in video marketing - video content has 3x engagement vs. static posts. Budget allocation: Content (40%), Referral program (30%), Video production (30%).", time: "14:10" },
+    {
+      id: 2,
+      type: "agent",
+      agent: "cmo",
+      content: "Based on our Q1 performance data, I recommend three priority strategies: 1) Double down on LinkedIn content - it's driving 45% of our qualified leads, 2) Launch a customer referral program - our NPS of 72 indicates strong advocacy potential, 3) Invest in video marketing - video content has 3x engagement vs. static posts. Budget allocation: Content (40%), Referral program (30%), Video production (30%).",
+      time: "14:10",
+      reasoning: [
+        { id: 1, title: "Marketing analytics analyzed", status: "completed", details: ["Analyzing file - marketing/q1_performance.json", "[ 'linkedin_leads: 45% ', ' nps: 72 ', ' video_engagement: 3x ']"] },
+        { id: 2, title: "Competitor analysis fetched", status: "completed", details: ["fetching contents for file marketing/competitor_strategies.json"] },
+      ]
+    },
     { id: 3, type: "user", content: "How do we measure success for these campaigns?", time: "14:18" },
-    { id: 4, type: "agent", agent: "cmo", content: "Key metrics by initiative: LinkedIn - target 500 MQLs/month (currently 320), Referral program - aim for 15% of new customers from referrals, Video content - 10K views per video average with 8% CTR. I'll set up a weekly dashboard tracking pipeline impact, cost per lead, and conversion rates at each funnel stage.", time: "14:25" },
+    {
+      id: 4,
+      type: "agent",
+      agent: "cmo",
+      content: "Key metrics by initiative: LinkedIn - target 500 MQLs/month (currently 320), Referral program - aim for 15% of new customers from referrals, Video content - 10K views per video average with 8% CTR. I'll set up a weekly dashboard tracking pipeline impact, cost per lead, and conversion rates at each funnel stage.",
+      time: "14:25",
+      reasoning: [
+        { id: 1, title: "KPI benchmarks loaded", status: "completed", details: ["Analyzing file - marketing/kpi_targets.json", "[ 'mql_target: 500 ', ' referral_target: 15% ', ' video_views: 10K ']"] },
+        { id: 2, title: "Dashboard template prepared", status: "completed", details: ["generating dashboard config from templates/marketing_dashboard.json"] },
+      ]
+    },
   ],
   cto: [
     { id: 1, type: "user", content: "What's the status of our cloud migration project?", time: "15:30" },
-    { id: 2, type: "agent", agent: "cto", content: "We're 65% complete on the migration to AWS. Core services are live in production. Remaining work: Database migration (2 weeks), Legacy API modernization (3 weeks), and final security hardening (1 week). We've already seen 40% improvement in API response times and 25% reduction in infrastructure costs.", time: "15:38" },
+    {
+      id: 2,
+      type: "agent",
+      agent: "cto",
+      content: "We're 65% complete on the migration to AWS. Core services are live in production. Remaining work: Database migration (2 weeks), Legacy API modernization (3 weeks), and final security hardening (1 week). We've already seen 40% improvement in API response times and 25% reduction in infrastructure costs.",
+      time: "15:38",
+      reasoning: [
+        { id: 1, title: "Code structure analyzed successfully", status: "completed", details: ["Analyzing file - app/modules/auth/auth_service.py", "[ ' class: AuthService ', ' method: login ', ' method: signup ', ' method: check_auth ']"] },
+        { id: 2, title: "Fetching file content", status: "completed", details: ["fetching contents for file app/modules/auth/auth_service.py"] },
+      ]
+    },
     { id: 3, type: "user", content: "Any technical debt we should address?", time: "15:45" },
-    { id: 4, type: "agent", agent: "cto", content: "Critical technical debt items: 1) Monolithic auth service needs to be split into microservices - blocking scalability, 2) Test coverage is at 45%, should be 80%+, 3) CI/CD pipeline needs optimization - builds taking 25 mins, target is 8 mins. I propose dedicating 20% of sprint capacity to debt reduction over the next 3 sprints.", time: "15:52" },
+    {
+      id: 4,
+      type: "agent",
+      agent: "cto",
+      content: "Critical technical debt items: 1) Monolithic auth service needs to be split into microservices - blocking scalability, 2) Test coverage is at 45%, should be 80%+, 3) CI/CD pipeline needs optimization - builds taking 25 mins, target is 8 mins. I propose dedicating 20% of sprint capacity to debt reduction over the next 3 sprints.",
+      time: "15:52",
+      reasoning: [
+        { id: 1, title: "Technical debt scan completed", status: "completed", details: ["Analyzing file - devops/tech_debt_report.json", "[ 'auth_service: monolithic ', ' test_coverage: 45% ', ' build_time: 25min ']"] },
+        { id: 2, title: "Sprint capacity checked", status: "completed", details: ["fetching contents for file project/sprint_planning.json"] },
+      ]
+    },
   ],
 };
 
@@ -131,6 +253,46 @@ const aiModels = [
   { id: "gpt", name: "GPT", description: "OpenAI GPT-4o", icon: Bot },
   { id: "perplexity", name: "Perplexity", description: "Perplexity Sonar", icon: Globe },
 ];
+
+// Agent capabilities for each agent type
+const agentCapabilities: Record<string, { id: string; name: string; description: string }[]> = {
+  cso: [
+    { id: "auto", name: "Auto", description: "Automatically select the best capability" },
+    { id: "market-intelligence", name: "Market Intelligence", description: "Competitive analysis and market trends" },
+    { id: "financial-forecasting", name: "Financial Forecasting", description: "Revenue and expense projections" },
+    { id: "product-innovation", name: "Product & Innovation", description: "Product strategy and innovation insights" },
+  ],
+  cfo: [
+    { id: "auto", name: "Auto", description: "Automatically select the best capability" },
+    { id: "budget-planning", name: "Budget Planning", description: "Annual and quarterly budgets" },
+    { id: "cash-flow-analysis", name: "Cash Flow Analysis", description: "Liquidity and cash management" },
+    { id: "investment-strategy", name: "Investment Strategy", description: "Capital allocation and ROI" },
+  ],
+  coo: [
+    { id: "auto", name: "Auto", description: "Automatically select the best capability" },
+    { id: "process-optimization", name: "Process Optimization", description: "Workflow and efficiency improvements" },
+    { id: "supply-chain", name: "Supply Chain", description: "Logistics and vendor management" },
+    { id: "resource-planning", name: "Resource Planning", description: "Capacity and allocation planning" },
+  ],
+  chro: [
+    { id: "auto", name: "Auto", description: "Automatically select the best capability" },
+    { id: "talent-acquisition", name: "Talent Acquisition", description: "Recruitment and hiring strategy" },
+    { id: "employee-engagement", name: "Employee Engagement", description: "Culture and satisfaction metrics" },
+    { id: "workforce-planning", name: "Workforce Planning", description: "Headcount and skills forecasting" },
+  ],
+  cmo: [
+    { id: "auto", name: "Auto", description: "Automatically select the best capability" },
+    { id: "campaign-analytics", name: "Campaign Analytics", description: "Marketing performance metrics" },
+    { id: "brand-strategy", name: "Brand Strategy", description: "Brand positioning and messaging" },
+    { id: "customer-insights", name: "Customer Insights", description: "Customer behavior and segmentation" },
+  ],
+  cto: [
+    { id: "auto", name: "Auto", description: "Automatically select the best capability" },
+    { id: "architecture-review", name: "Architecture Review", description: "System design and scalability" },
+    { id: "tech-debt-analysis", name: "Tech Debt Analysis", description: "Code quality and maintenance" },
+    { id: "security-assessment", name: "Security Assessment", description: "Vulnerability and compliance" },
+  ],
+};
 
 // Chat history for each agent
 const agentChatHistory: Record<string, { title: string; hasMenu: boolean; isActive: boolean }[]> = {
@@ -188,17 +350,101 @@ const agentChatHistory: Record<string, { title: string; hasMenu: boolean; isActi
 
 export default function Agents() {
   const { agentId } = useParams<{ agentId: string }>();
-  
+
   // Check if mobile on initial render
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  
+
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(!isMobile);
   const [selectedModel, setSelectedModel] = useState("auto");
+  const [selectedCapability, setSelectedCapability] = useState("auto");
+  const [inputMessage, setInputMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [expandedReasonings, setExpandedReasonings] = useState<Record<number, boolean>>({});
+  const [expandedSteps, setExpandedSteps] = useState<Record<string, boolean>>({});
 
   // Get chat history and conversation based on current agent
   const currentChatHistory = agentChatHistory[agentId || "cso"] || agentChatHistory.cso;
-  const currentConversation = agentConversations[agentId || "cso"] || agentConversations.cso;
+  const initialConversation = agentConversations[agentId || "cso"] || agentConversations.cso;
+
+  // Initialize messages with current conversation when agent changes
+  const currentAgent = agentId || "cso";
+  if (messages.length === 0 || (messages.length > 0 && messages[0]?.agent !== currentAgent && messages[0]?.type === "agent")) {
+    // Only reset if we haven't initialized or agent changed
+  }
+
+  // Get the conversation to display (initial + new messages)
+  const displayMessages = messages.length > 0 ? messages : initialConversation;
+
+  // Handle sending a message
+  const handleSendMessage = () => {
+    if (!inputMessage.trim()) return;
+
+    const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const agent = aiAgents[currentAgent];
+
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now(),
+      type: "user",
+      content: inputMessage,
+      time: currentTime
+    };
+
+    // Create AI response with reasoning
+    const aiResponses = [
+      `Thank you for your question. Based on my analysis as ${agent.role}, I can provide some insights on "${inputMessage}". Let me review the relevant data and provide a comprehensive response.`,
+      `That's an excellent point to discuss. From my perspective as ${agent.role}, I believe we should approach this strategically. Here are my thoughts on "${inputMessage}".`,
+      `I appreciate you bringing this up. As your ${agent.role}, I've been analyzing similar scenarios. Regarding "${inputMessage}", here's what I recommend based on current trends and our organizational goals.`,
+    ];
+
+    const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+
+    // Generate reasoning steps based on agent type
+    const reasoningByAgent: Record<string, ReasoningStep[]> = {
+      cso: [
+        { id: 1, title: "Security context analyzed", status: "completed", details: ["Analyzing file - security/threat_intelligence.json", "[ 'risk_level: moderate ', ' active_threats: 2 ']"] },
+        { id: 2, title: "Fetching policy documents", status: "completed", details: ["fetching contents for file security/policies.json"] },
+      ],
+      cfo: [
+        { id: 1, title: "Financial data analyzed", status: "completed", details: ["Analyzing file - finance/current_metrics.json", "[ 'revenue: $4.2M ', ' expenses: $3.1M ']"] },
+        { id: 2, title: "Fetching budget data", status: "completed", details: ["fetching contents for file finance/budget_2025.json"] },
+      ],
+      coo: [
+        { id: 1, title: "Operations data analyzed", status: "completed", details: ["Analyzing file - operations/metrics.json", "[ 'efficiency: 87% ', ' utilization: 92% ']"] },
+        { id: 2, title: "Fetching process data", status: "completed", details: ["fetching contents for file operations/workflows.json"] },
+      ],
+      cmo: [
+        { id: 1, title: "Marketing data analyzed", status: "completed", details: ["Analyzing file - marketing/campaigns.json", "[ 'active_campaigns: 5 ', ' total_reach: 125K ']"] },
+        { id: 2, title: "Fetching analytics data", status: "completed", details: ["fetching contents for file marketing/analytics.json"] },
+      ],
+      cto: [
+        { id: 1, title: "Code structure analyzed successfully", status: "completed", details: ["Analyzing file - app/modules/core/service.py", "[ ' class: CoreService ', ' method: process ', ' method: validate ']"] },
+        { id: 2, title: "Fetching file content", status: "completed", details: ["fetching contents for file app/modules/core/service.py"] },
+      ],
+    };
+
+    const aiMessage: Message = {
+      id: Date.now() + 1,
+      type: "agent",
+      agent: currentAgent,
+      content: randomResponse,
+      time: new Date(Date.now() + 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+      reasoning: reasoningByAgent[currentAgent] || reasoningByAgent.cto
+    };
+
+    // Update messages
+    const currentMessages = messages.length > 0 ? messages : [...initialConversation];
+    setMessages([...currentMessages, userMessage, aiMessage]);
+    setInputMessage("");
+  };
+
+  // Handle key press (Enter to send)
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && inputMessage.trim()) {
+      handleSendMessage();
+    }
+  };
 
   return (
     <div className="flex h-full w-full bg-background overflow-hidden border-t border-border">
@@ -333,7 +579,7 @@ export default function Agents() {
         <ScrollArea className="flex-1 p-6">
           <div className="max-w-4xl mx-auto space-y-6 pb-4">
             {/* Conversation Messages */}
-            {currentConversation.map((message) => {
+            {displayMessages.map((message) => {
               if (message.type === "user") {
                 return (
                   <div key={message.id} className="flex justify-end items-start gap-3">
@@ -352,6 +598,7 @@ export default function Agents() {
                 );
               } else {
                 const agent = aiAgents[message.agent as keyof typeof aiAgents];
+                const isReasoningExpanded = expandedReasonings[message.id] ?? false;
 
                 return (
                   <div key={message.id} className="flex items-start gap-3">
@@ -365,6 +612,78 @@ export default function Agents() {
                         <span className="text-sm font-semibold text-foreground">{agent.name}</span>
                         <span className={cn("text-xs font-medium", agent.textColor)}>{agent.role}</span>
                       </div>
+
+                      {/* Reasoning Panel */}
+                      {message.reasoning && message.reasoning.length > 0 && (
+                        <div className="mb-2">
+                          {/* Reasoning Header */}
+                          <button
+                            onClick={() => setExpandedReasonings(prev => ({
+                              ...prev,
+                              [message.id]: !prev[message.id]
+                            }))}
+                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+                          >
+                            <span className="font-medium">Reasoning completed</span>
+                            {isReasoningExpanded ? (
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+
+                          {/* Expanded Reasoning Steps */}
+                          {isReasoningExpanded && (
+                            <div className="mt-1 space-y-1 pl-1">
+                              {message.reasoning.map((step) => {
+                                const stepKey = `${message.id}-${step.id}`;
+                                const isStepExpanded = expandedSteps[stepKey] ?? false;
+
+                                return (
+                                  <div key={step.id} className="space-y-0.5">
+                                    {/* Step Header */}
+                                    <button
+                                      onClick={() => setExpandedSteps(prev => ({
+                                        ...prev,
+                                        [stepKey]: !prev[stepKey]
+                                      }))}
+                                      className="flex items-center gap-2 text-sm w-full text-left py-0.5"
+                                    >
+                                      {step.status === 'completed' ? (
+                                        <Check className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
+                                      ) : step.status === 'loading' ? (
+                                        <Loader2 className="h-3.5 w-3.5 text-muted-foreground animate-spin flex-shrink-0" />
+                                      ) : (
+                                        <div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/30 flex-shrink-0" />
+                                      )}
+                                      <span className="text-foreground/80">{step.title}</span>
+                                      {step.details && (
+                                        isStepExpanded ? (
+                                          <ChevronUp className="h-3 w-3 text-muted-foreground ml-auto" />
+                                        ) : (
+                                          <ChevronDown className="h-3 w-3 text-muted-foreground ml-auto" />
+                                        )
+                                      )}
+                                    </button>
+
+                                    {/* Step Details */}
+                                    {isStepExpanded && step.details && (
+                                      <div className="pl-6 space-y-0.5">
+                                        {step.details.map((detail, idx) => (
+                                          <p key={idx} className="text-xs text-muted-foreground font-mono">
+                                            {detail}
+                                          </p>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div className="bg-muted/50 border border-border/50 px-4 py-3 rounded-2xl rounded-tl-sm">
                         <p className="text-sm leading-relaxed text-foreground/90">{message.content}</p>
                       </div>
@@ -387,6 +706,9 @@ export default function Agents() {
                   type="text"
                   placeholder="Ask a follow-up"
                   className="w-full bg-transparent text-foreground placeholder-muted-foreground text-sm outline-none"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyPress}
                 />
               </div>
 
@@ -461,6 +783,37 @@ export default function Agents() {
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
+
+                  {/* Agent Capability Selector */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <Layers className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      {(agentCapabilities[currentAgent] || agentCapabilities.cso).map((capability) => (
+                        <DropdownMenuItem
+                          key={capability.id}
+                          onClick={() => setSelectedCapability(capability.id)}
+                          className="flex items-center gap-2 py-2 cursor-pointer"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{capability.name}</div>
+                            <div className="text-xs text-muted-foreground">{capability.description}</div>
+                          </div>
+                          {selectedCapability === capability.id && (
+                            <Check className="h-4 w-4 text-primary" />
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                   <Button
                     variant="ghost"
                     size="icon"
@@ -477,9 +830,16 @@ export default function Agents() {
                   </Button>
                   <Button
                     size="icon"
-                    className="h-8 w-8 rounded-lg bg-muted hover:bg-muted/80 text-foreground"
+                    className={cn(
+                      "h-8 w-8 rounded-lg transition-all duration-200",
+                      inputMessage.trim()
+                        ? "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
+                        : "bg-muted hover:bg-muted/80 text-muted-foreground cursor-not-allowed"
+                    )}
+                    onClick={handleSendMessage}
+                    disabled={!inputMessage.trim()}
                   >
-                    <ArrowRight className="h-4 w-4 -rotate-90" />
+                    <Send className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -511,35 +871,14 @@ export default function Agents() {
 
         <ScrollArea className="flex-1 p-4 min-w-[300px]">
           <div className="space-y-6">
-            {/* Context Note */}
-            <div className="bg-secondary/30 rounded-lg p-3 text-sm text-foreground/80 leading-relaxed">
-              Discussion focusing on budget breakdown and resource allocation for Q1-Q2 initiatives across digital transformation, customer experience, and strategic partnerships.
-            </div>
-
-            {/* Docs Section */}
+            {/* Thread Summary */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="font-semibold text-sm">Docs</span>
+                <span className="font-semibold text-sm">Thread Summary</span>
               </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 py-1 text-muted-foreground hover:text-foreground cursor-pointer">
-                  <ChevronDown className="h-4 w-4" />
-                  <span className="text-sm font-medium">Thread Summary</span>
-                </div>
-
-                <div className="pl-2 space-y-2 mt-2">
-                  {[
-                    { name: "Q1-Q2 Financial Model.xlsx", type: "spreadsheet" },
-                    { name: "Talent Acquisition Strategy.pdf", type: "pdf" },
-                    { name: "Project Timeline.doc", type: "doc" }
-                  ].map((doc, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                      <FileText className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm text-foreground/80 truncate">{doc.name}</span>
-                    </div>
-                  ))}
-                </div>
+              {/* Context Note */}
+              <div className="bg-secondary/30 rounded-lg p-3 text-sm text-foreground/80 leading-relaxed">
+                Discussion focusing on budget breakdown and resource allocation for Q1-Q2 initiatives across digital transformation, customer experience, and strategic partnerships.
               </div>
             </div>
 
