@@ -48,6 +48,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Define AI agents with their details
 const aiAgents: Record<string, { name: string; role: string; icon: any; color: string; textColor: string }> = {
@@ -745,28 +750,28 @@ export default function Agents() {
 
                 {/* Right side icons */}
                 <div className="flex items-center gap-1">
-                  {/* <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                  >
-                    <Globe className="h-4 w-4" />
-                  </Button> */}
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                      >
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="3" width="7" height="7" rx="1" />
-                          <rect x="14" y="3" width="7" height="7" rx="1" />
-                          <rect x="3" y="14" width="7" height="7" rx="1" />
-                          <rect x="14" y="14" width="7" height="7" rx="1" />
-                        </svg>
-                      </Button>
-                    </DropdownMenuTrigger>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          >
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="7" height="7" rx="1" />
+                              <rect x="14" y="3" width="7" height="7" rx="1" />
+                              <rect x="3" y="14" width="7" height="7" rx="1" />
+                              <rect x="14" y="14" width="7" height="7" rx="1" />
+                            </svg>
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Model</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <DropdownMenuContent align="start" className="w-52">
                       {aiModels.map((model) => (
                         <DropdownMenuItem
@@ -788,15 +793,22 @@ export default function Agents() {
 
                   {/* Agent Capability Selector */}
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                      >
-                        <Layers className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          >
+                            <Layers className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Agents</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <DropdownMenuContent align="start" className="w-56">
                       {(agentCapabilities[currentAgent] || agentCapabilities.cso).map((capability) => (
                         <DropdownMenuItem
@@ -816,33 +828,56 @@ export default function Agents() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                  >
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                  >
-                    <Mic className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    className={cn(
-                      "h-8 w-8 rounded-lg transition-all duration-200",
-                      inputMessage.trim()
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
-                        : "bg-muted hover:bg-muted/80 text-muted-foreground cursor-not-allowed"
-                    )}
-                    onClick={handleSendMessage}
-                    disabled={!inputMessage.trim()}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Attach File</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <Mic className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Voice Input</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        className={cn(
+                          "h-8 w-8 rounded-lg transition-all duration-200",
+                          inputMessage.trim()
+                            ? "bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                            : "bg-muted hover:bg-muted/80 text-muted-foreground cursor-not-allowed"
+                        )}
+                        onClick={handleSendMessage}
+                        disabled={!inputMessage.trim()}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Send Message</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             </div>
