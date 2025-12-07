@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFreebsd } from "@fortawesome/free-brands-svg-icons";
 import {
   Search,
   Globe,
@@ -604,7 +606,7 @@ export default function Agents() {
                   <div key={message.id} className="flex items-start gap-3">
                     <Avatar className={cn("h-8 w-8 flex-shrink-0", agent.color)}>
                       <AvatarFallback className={cn(agent.color, "text-white")}>
-                        <Bot className="h-4 w-4" />
+                        <FontAwesomeIcon icon={faFreebsd} className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col flex-1 max-w-[85%]">
@@ -893,12 +895,28 @@ export default function Agents() {
                     { name: "Q1-Q2 Financial Model.xlsx", type: "spreadsheet" },
                     { name: "Talent Acquisition Strategy.pdf", type: "pdf" },
                     { name: "Project Timeline.doc", type: "doc" }
-                  ].map((doc, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                      <FileText className="h-4 w-4 text-primary" />
-                      <span className="text-sm text-foreground/80 truncate">{doc.name}</span>
-                    </div>
-                  ))}
+                  ].map((doc, i) => {
+                    // Determine color based on file type
+                    const getFileColor = (type: string) => {
+                      switch (type) {
+                        case 'pdf':
+                          return 'text-red-500';
+                        case 'spreadsheet':
+                          return 'text-green-500';
+                        case 'doc':
+                          return 'text-blue-500';
+                        default:
+                          return 'text-primary';
+                      }
+                    };
+
+                    return (
+                      <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                        <FileText className={cn("h-4 w-4", getFileColor(doc.type))} />
+                        <span className="text-sm text-foreground/80 truncate">{doc.name}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -912,17 +930,33 @@ export default function Agents() {
               </div>
               <div className="space-y-2">
                 {[
-                  "Budget Planning Session (Dec 1)",
-                  "Talent Network Review (Nov 28)",
-                  "Infrastructure Assessment (Nov 25)"
-                ].map((memory, i) => (
-                  <div key={i} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                    <FileText className="h-4 w-4 text-orange-400 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-foreground/80 leading-tight line-clamp-2">
-                      {memory}
-                    </span>
-                  </div>
-                ))}
+                  { text: "Budget Planning Session (Dec 1)", type: "planning" },
+                  { text: "Talent Network Review (Nov 28)", type: "review" },
+                  { text: "Infrastructure Assessment (Nov 25)", type: "assessment" }
+                ].map((memory, i) => {
+                  // Determine color based on memory type
+                  const getMemoryColor = (type: string) => {
+                    switch (type) {
+                      case 'planning':
+                        return 'text-purple-500';
+                      case 'review':
+                        return 'text-amber-500';
+                      case 'assessment':
+                        return 'text-cyan-500';
+                      default:
+                        return 'text-orange-400';
+                    }
+                  };
+
+                  return (
+                    <div key={i} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                      <FileText className={cn("h-4 w-4 mt-0.5 flex-shrink-0", getMemoryColor(memory.type))} />
+                      <span className="text-sm text-foreground/80 leading-tight line-clamp-2">
+                        {memory.text}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

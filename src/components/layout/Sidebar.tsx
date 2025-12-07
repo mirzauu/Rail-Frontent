@@ -17,21 +17,21 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const agents = [
-  { id: "cso", name: "Michael", role: "CSO", icon: Bot },
-  { id: "cfo", name: "David", role: "CFO", letter: "G" },
-  { id: "coo", name: "John", role: "COO", letter: "H" },
-  { id: "cmo", name: "Sarah", role: "CMO", letter: "M" },
-  { id: "cto", name: "Emily", role: "CTO", icon: Cog },
+  { id: "cso", name: "Michael", role: "CSO", letter: "M" },
+  { id: "cfo", name: "David", role: "CFO", letter: "D" },
+  { id: "coo", name: "John", role: "COO", letter: "J" },
+  { id: "cmo", name: "Sarah", role: "CMO", letter: "S" },
+  { id: "cto", name: "Emily", role: "CTO", letter: "E" },
 ];
 
 const memoryItems = [
-  { icon: Brain, label: "Memory", path: "/memory", rightIcon: Brain },
-  { icon: BookOpen, label: "Knowledge Base", path: "/knowledge", rightIcon: Brain },
+  { icon: Brain, label: "Memory", path: "/memory" },
+  { icon: BookOpen, label: "Knowledge Base", path: "/knowledge" },
 ];
 
 const managementItems = [
-  { icon: MessageSquare, label: "Users", path: "/users", rightIcon: Settings },
-  { icon: Users, label: "Integrations", path: "/integrations", rightLabel: "Settings" },
+  { icon: MessageSquare, label: "Users", path: "/users" },
+  { icon: Users, label: "Integrations", path: "/integrations" },
 ];
 
 export function Sidebar() {
@@ -97,7 +97,6 @@ export function Sidebar() {
           <div className="space-y-1">
             {agents.map((agent) => {
               const isAgentActive = location.pathname === `/agents/${agent.id}`;
-              const AgentIcon = agent.icon;
 
               const agentContent = (
                 <NavLink
@@ -113,24 +112,14 @@ export function Sidebar() {
                       : "text-gray-600 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50"
                   )}
                 >
-                  {AgentIcon ? (
-                    <div className={cn(
-                      "flex items-center justify-center rounded-full flex-shrink-0",
-                      collapsed ? "h-8 w-8" : "h-7 w-7",
-                      isAgentActive ? "bg-primary-foreground/20" : "bg-gray-300 dark:bg-gray-600"
+                  <Avatar className={cn(collapsed ? "h-8 w-8" : "h-7 w-7")}>
+                    <AvatarFallback className={cn(
+                      "text-xs font-medium",
+                      isAgentActive ? "bg-primary-foreground/20 text-white" : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
                     )}>
-                      <AgentIcon className={cn(collapsed ? "h-5 w-5" : "h-4 w-4")} />
-                    </div>
-                  ) : (
-                    <Avatar className={cn(collapsed ? "h-8 w-8" : "h-7 w-7")}>
-                      <AvatarFallback className={cn(
-                        "text-xs font-medium",
-                        isAgentActive ? "bg-primary-foreground/20 text-white" : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
-                      )}>
-                        {agent.letter}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
+                      {agent.letter}
+                    </AvatarFallback>
+                  </Avatar>
                   {!collapsed && (
                     <span className="font-medium">
                       {agent.name} ({agent.role})
@@ -171,7 +160,6 @@ export function Sidebar() {
             <div className="space-y-1">
               {memoryItems.map((item) => {
                 const isActive = location.pathname === item.path;
-                const RightIcon = item.rightIcon;
 
                 return (
                   <NavLink
@@ -186,7 +174,6 @@ export function Sidebar() {
                   >
                     <item.icon className="h-5 w-5" />
                     <span className="flex-1 font-medium">{item.label}</span>
-                    <RightIcon className="h-5 w-5 text-gray-400" />
                   </NavLink>
                 );
               })}
@@ -207,7 +194,6 @@ export function Sidebar() {
             <div className="space-y-1">
               {managementItems.map((item) => {
                 const isActive = location.pathname === item.path;
-                const RightIcon = item.rightIcon;
 
                 return (
                   <NavLink
@@ -222,8 +208,6 @@ export function Sidebar() {
                   >
                     <item.icon className="h-5 w-5" />
                     <span className="flex-1 font-medium">{item.label}</span>
-                    {RightIcon && <RightIcon className="h-5 w-5 text-gray-500" />}
-                    {item.rightLabel && <span className="text-sm text-gray-400">{item.rightLabel}</span>}
                   </NavLink>
                 );
               })}
