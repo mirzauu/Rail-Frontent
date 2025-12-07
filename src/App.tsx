@@ -14,6 +14,8 @@ import Users from "./pages/Users";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const queryClient = new QueryClient();
 
@@ -24,20 +26,23 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppLayout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/agents" element={<Agents />} />
-              <Route path="/agents/:agentId" element={<Agents />} />
-              <Route path="/memory" element={<Memory />} />
-              <Route path="/knowledge" element={<Knowledge />} />
-              <Route path="/chats" element={<Chats />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/integrations" element={<Integrations />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppLayout>
+          <Routes>
+            {/* Auth Routes - No Layout */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            {/* App Routes - With Layout */}
+            <Route path="/" element={<AppLayout><Dashboard /></AppLayout>} />
+            <Route path="/agents" element={<AppLayout><Agents /></AppLayout>} />
+            <Route path="/agents/:agentId" element={<AppLayout><Agents /></AppLayout>} />
+            <Route path="/memory" element={<AppLayout><Memory /></AppLayout>} />
+            <Route path="/knowledge" element={<AppLayout><Knowledge /></AppLayout>} />
+            <Route path="/chats" element={<AppLayout><Chats /></AppLayout>} />
+            <Route path="/users" element={<AppLayout><Users /></AppLayout>} />
+            <Route path="/integrations" element={<AppLayout><Integrations /></AppLayout>} />
+            <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

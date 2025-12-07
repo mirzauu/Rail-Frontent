@@ -1,5 +1,5 @@
 import { Bell, ChevronDown, Sun, Moon } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,6 +15,16 @@ import { useTheme } from "next-themes";
 
 export function TopBar() {
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear any auth tokens/session data here
+    localStorage.removeItem("authToken");
+    sessionStorage.clear();
+
+    // Navigate to login page
+    navigate("/login");
+  };
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
@@ -87,7 +97,10 @@ export function TopBar() {
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem
+              className="text-destructive cursor-pointer"
+              onClick={handleLogout}
+            >
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
