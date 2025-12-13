@@ -8,10 +8,11 @@ import {
   Users,
   Settings,
   ChevronLeft,
-  Train,
   Cog,
 } from "lucide-react";
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCentos } from "@fortawesome/free-brands-svg-icons";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -57,11 +58,11 @@ export function Sidebar() {
         )}
       >
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary flex-shrink-0">
-          <Train className="h-5 w-5 text-primary-foreground" />
+          <FontAwesomeIcon icon={faCentos} className="h-6 w-6 text-primary-foreground" />
         </div>
         {!collapsed && (
           <span className="text-xl font-semibold text-gray-800 dark:text-white">
-            RailVision
+            Clark
           </span>
         )}
       </button>

@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Train, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCentos } from "@fortawesome/free-brands-svg-icons";
 import { Link } from "react-router-dom";
 
 export default function Login() {
@@ -30,9 +32,9 @@ export default function Login() {
                 {/* Logo and Brand */}
                 <div className="flex flex-col items-center mb-8">
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20 mb-4">
-                        <Train className="h-9 w-9 text-primary-foreground" />
+                        <FontAwesomeIcon icon={faCentos} className="h-12 w-12 text-primary-foreground" />
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">RailVision AI</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Clark</h1>
                     <p className="text-sm text-muted-foreground mt-1">AI-Powered C-Suite Intelligence</p>
                 </div>
 
